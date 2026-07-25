@@ -11,19 +11,30 @@ async function startBot() {
 
   const sock = makeWASocket({
     auth: state,
-    logger: P({ level: "silent" })
+    logger: P({ level: "silent" }),
+    printQRInTerminal: false
   });
 
   sock.ev.on("creds.update", saveCreds);
 
-  sock.ev.on("connection.update", ({ connection, qr, lastDisconnect }) => {
-    if (qr) {
-      console.log("QR:");
-      console.log(qr);
-    }
+  // شماره واتساپ (بدون +)
+  const phoneNumber = "93745872028";
 
+  if (!sock.authState.creds.registered) {
+    try {
+      const code = await sock.requestPairingCode(phoneNumber);
+      console.log("\n==============================");
+      console.log("PAIRING CODE:");
+      console.log(code);
+      console.log("==============================\n");
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  sock.ev.on("connection.update", ({ connection, lastDisconnect }) => {
     if (connection === "open") {
-      console.log("✅ Bot Connected");
+      console.log("✅ WhatsApp Connected");
     }
 
     if (connection === "close") {
